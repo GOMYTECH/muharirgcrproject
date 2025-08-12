@@ -1,0 +1,1177 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NECO GCE Mathematics Quiz - 50 Questions</title>
+    <style>
+        :root {
+            --primary: #6e48aa;
+            --secondary: #9d50bb;
+            --accent: #4776e6;
+            --background: #121212;
+            --card-bg: #1e1e1e;
+            --text: #ffffff;
+            --correct: #4caf50;
+            --incorrect: #f44336;
+            --timer-warning: #ff9800;
+            --timer-critical: #f44336;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--background);
+            color: var(--text);
+            margin: 0;
+            padding: 0;
+            line-height: 1.6;
+            background-image: 
+                radial-gradient(circle at 25% 25%, rgba(110, 72, 170, 0.15) 0%, transparent 50%),
+                radial-gradient(circle at 75% 75%, rgba(157, 80, 187, 0.15) 0%, transparent 50%);
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+            position: relative;
+        }
+
+        h1 {
+            color: var(--text);
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            text-shadow: 0 0 10px rgba(110, 72, 170, 0.3);
+        }
+
+        .timer-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .timer {
+            font-size: 1.5rem;
+            font-weight: bold;
+            background: var(--card-bg);
+            padding: 10px 20px;
+            border-radius: 50px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+            display: flex;
+            align-items: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .timer-progress {
+            position: absolute;
+            top: 0;
+            left: 0;
+            height: 100%;
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
+            z-index: 0;
+            transition: width 1s linear;
+        }
+
+        .timer-text {
+            position: relative;
+            z-index: 1;
+        }
+
+        .timer.warning {
+            color: var(--timer-warning);
+        }
+
+        .timer.critical {
+            color: var(--timer-critical);
+            animation: pulse 1s infinite;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+
+        .quiz-container {
+            background-color: var(--card-bg);
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            margin-bottom: 30px;
+        }
+
+        .question-container {
+            display: none;
+        }
+
+        .question-container.active {
+            display: block;
+            animation: fadeIn 0.5s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .question-number {
+            color: var(--secondary);
+            font-weight: bold;
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .progress-bar {
+            height: 5px;
+            background-color: rgba(255, 255, 255, 0.1);
+            border-radius: 5px;
+            width: 100px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
+            transition: width 0.3s ease;
+        }
+
+        .question-text {
+            font-size: 1.2rem;
+            margin-bottom: 20px;
+            line-height: 1.5;
+        }
+
+        .options {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 12px;
+        }
+
+        .option {
+            background-color: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            padding: 15px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .option:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+            transform: translateY(-2px);
+        }
+
+        .option.selected {
+            background-color: rgba(110, 72, 170, 0.3);
+            border-color: var(--primary);
+        }
+
+        .option.correct {
+            background-color: rgba(76, 175, 80, 0.3);
+            border-color: var(--correct);
+        }
+
+        .option.incorrect {
+            background-color: rgba(244, 67, 54, 0.3);
+            border-color: var(--incorrect);
+        }
+
+        .option input {
+            display: none;
+        }
+
+        .option-label {
+            display: flex;
+            align-items: center;
+            cursor: pointer;
+        }
+
+        .option-letter {
+            display: inline-block;
+            width: 25px;
+            height: 25px;
+            background-color: rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+            text-align: center;
+            line-height: 25px;
+            margin-right: 15px;
+            font-weight: bold;
+            transition: all 0.3s ease;
+        }
+
+        .option.selected .option-letter {
+            background-color: var(--primary);
+            color: white;
+        }
+
+        .option.correct .option-letter {
+            background-color: var(--correct);
+            color: white;
+        }
+
+        .option.incorrect .option-letter {
+            background-color: var(--incorrect);
+            color: white;
+        }
+
+        .navigation {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 30px;
+        }
+
+        button {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 50px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(110, 72, 170, 0.3);
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(110, 72, 170, 0.4);
+        }
+
+        button:disabled {
+            background: rgba(255, 255, 255, 0.1);
+            color: rgba(255, 255, 255, 0.5);
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .submit-btn {
+            background: linear-gradient(135deg, var(--accent), #4776e6);
+        }
+
+        .result-container, .user-info-container {
+            display: none;
+            text-align: center;
+            animation: fadeIn 0.5s ease;
+        }
+
+        .result-container.active, .user-info-container.active {
+            display: block;
+        }
+
+        .score {
+            font-size: 3rem;
+            font-weight: bold;
+            margin: 20px 0;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+
+        .percentage {
+            font-size: 1.5rem;
+            margin-bottom: 20px;
+        }
+
+        .correct-answers {
+            color: var(--correct);
+        }
+
+        .incorrect-answers {
+            color: var(--incorrect);
+        }
+
+        .corrections {
+            margin-top: 30px;
+            text-align: left;
+        }
+
+        .correction-item {
+            background-color: var(--card-bg);
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 15px;
+            border-left: 4px solid var(--primary);
+        }
+
+        .correction-question {
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .user-info-form {
+            max-width: 500px;
+            margin: 0 auto;
+            text-align: left;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+        }
+
+        input, textarea {
+            width: 100%;
+            padding: 12px;
+            background-color: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            color: var(--text);
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        input:focus, textarea:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 2px rgba(110, 72, 170, 0.3);
+        }
+
+        .start-screen {
+            text-align: center;
+            padding: 40px 20px;
+        }
+
+        .start-btn {
+            padding: 15px 40px;
+            font-size: 1.2rem;
+            margin-top: 30px;
+        }
+
+        .quiz-intro {
+            margin-bottom: 30px;
+            line-height: 1.6;
+        }
+
+        .rules {
+            background-color: var(--card-bg);
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+            text-align: left;
+        }
+
+        .rules li {
+            margin-bottom: 10px;
+        }
+
+        .floating-particles {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: -1;
+        }
+
+        .particle {
+            position: absolute;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            border-radius: 50%;
+            opacity: 0.1;
+        }
+
+        .loading {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+        }
+
+        .loading.active {
+            display: flex;
+        }
+
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 5px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: var(--primary);
+            animation: spin 1s ease-in-out infinite;
+            margin-bottom: 20px;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .loading-text {
+            color: white;
+            font-size: 1.2rem;
+        }
+
+        .success-message {
+            display: none;
+            background-color: var(--correct);
+            color: white;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 20px;
+            animation: fadeIn 0.5s ease;
+        }
+
+        .success-message.active {
+            display: block;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 15px;
+            }
+            
+            h1 {
+                font-size: 2rem;
+            }
+            
+            .quiz-container {
+                padding: 15px;
+            }
+            
+            .question-text {
+                font-size: 1.1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="floating-particles" id="particles"></div>
+    <div class="loading" id="loading">
+        <div class="spinner"></div>
+        <div class="loading-text">Sending your results...</div>
+    </div>
+    
+    <div class="container">
+        <div id="start-screen" class="start-screen">
+            <h1>NECO GCE Mathematics Quiz</h1>
+            <div class="quiz-intro">
+                <p>Test your knowledge with this 50-question Mathematics quiz covering algebra, geometry, trigonometry, and more.</p>
+                <p>You'll have <strong>35 minutes</strong> to complete all questions.</p>
+            </div>
+            
+            <div class="rules">
+                <h3>Quiz Rules:</h3>
+                <ul>
+                    <li>50 questions total</li>
+                    <li>35 minute time limit</li>
+                    <li>Timer will be shown during the quiz</li>
+                    <li>You can't go back to previous questions</li>
+                    <li>Answers will be shown at the end with corrections</li>
+                    <li>Results will be sent to your email</li>
+                </ul>
+            </div>
+            
+            <button id="start-btn" class="start-btn">Start Quiz</button>
+        </div>
+        
+        <div id="quiz-container" style="display: none;">
+            <header>
+                <h1>NECO GCE Mathematics Quiz</h1>
+                <div class="timer-container">
+                    <div class="timer" id="timer">
+                        <div class="timer-progress" id="timer-progress"></div>
+                        <div class="timer-text">Time remaining: 35:00</div>
+                    </div>
+                </div>
+            </header>
+            
+            <div class="quiz-container">
+                <div id="question-container" class="question-container active"></div>
+                
+                <div class="navigation">
+                    <button id="prev-btn" disabled>Previous</button>
+                    <button id="next-btn">Next</button>
+                    <button id="submit-btn" class="submit-btn" style="display: none;">Submit Quiz</button>
+                </div>
+            </div>
+        </div>
+        
+        <div id="user-info-container" class="user-info-container">
+            <h2>Quiz Completed!</h2>
+            <p>Please enter your details to view your results and receive a copy.</p>
+            
+            <form id="user-info-form" class="user-info-form" action="https://formspree.io/f/xldlzjzr" method="POST">
+                <input type="hidden" name="score" id="form-score">
+                <input type="hidden" name="percentage" id="form-percentage">
+                <input type="hidden" name="correct_answers" id="form-correct">
+                <input type="hidden" name="incorrect_answers" id="form-incorrect">
+                <input type="hidden" name="answers_summary" id="form-answers">
+                <input type="hidden" name="_subject" value="New NECO GCE Math Quiz Results Submission">
+                <input type="hidden" name="_replyto" id="form-replyto">
+                <input type="hidden" name="_cc" value="gomytech1@gmail.com">
+                
+                <div class="form-group">
+                    <label for="name">Full Name</label>
+                    <input type="text" id="name" name="name" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="email">Email Address</label>
+                    <input type="email" id="email" name="email" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="comments">Comments (Optional)</label>
+                    <textarea id="comments" name="comments" rows="3"></textarea>
+                </div>
+                
+                <button type="submit" class="submit-btn">View Results</button>
+                
+                <div class="success-message" id="success-message">
+                    Results successfully sent! You can now view your detailed results below.
+                </div>
+            </form>
+        </div>
+        
+        <div id="result-container" class="result-container">
+            <h2>Your Quiz Results</h2>
+            <div class="score" id="score">0/50</div>
+            <div class="percentage" id="percentage">0%</div>
+            <p>You answered <span class="correct-answers" id="correct-count">0</span> questions correctly and <span class="incorrect-answers" id="incorrect-count">0</span> incorrectly.</p>
+            
+            <div class="corrections" id="corrections"></div>
+            
+            <button id="restart-btn" class="start-btn">Take Quiz Again</button>
+        </div>
+    </div>
+
+    <script>
+        // Quiz questions data
+        const questions = [
+            {
+                question: "Convert 251₆ to base 10.",
+                options: ["97", "91", "95", "99"],
+                answer: 0,
+                time: 30
+            },
+            {
+                question: "Solve for x if 3x - 5 = 13.",
+                options: ["6", "5", "7", "8"],
+                answer: 0,
+                time: 30
+            },
+            {
+                question: "If y = 2x² - 3x + 4, find y when x = -2.",
+                options: ["18", "14", "20", "10"],
+                answer: 0,
+                time: 30
+            },
+            {
+                question: "Evaluate log₁₀1000.",
+                options: ["3", "2", "4", "10"],
+                answer: 0,
+                time: 30
+            },
+            {
+                question: "Simplify: (2x²y) × (3xy³).",
+                options: ["6x³y⁴", "5x³y⁴", "6x²y³", "5x²y³"],
+                answer: 0,
+                time: 30
+            },
+            {
+                question: "Factorize: x² - 9.",
+                options: ["(x-3)²", "(x-3)(x+3)", "(x-9)(x+1)", "None"],
+                answer: 1,
+                time: 30
+            },
+            {
+                question: "If the 5th term of an A.P is 23 and the first term is 7, find the common difference.",
+                options: ["3", "4", "5", "6"],
+                answer: 2,
+                time: 30
+            },
+            {
+                question: "The sum of three consecutive integers is 72. Find the smallest.",
+                options: ["22", "23", "24", "25"],
+                answer: 2,
+                time: 30
+            },
+            {
+                question: "Solve: 2x + 3 < 9.",
+                options: ["x < 3", "x < 2", "x > 3", "x > 2"],
+                answer: 1,
+                time: 30
+            },
+            {
+                question: "If sinθ = 3/5, find cosθ (acute angle).",
+                options: ["4/5", "5/4", "5/3", "3/4"],
+                answer: 0,
+                time: 30
+            },
+            {
+                question: "A box contains 5 red balls and 3 blue balls. Probability of picking a red ball?",
+                options: ["5/8", "3/8", "1/3", "2/5"],
+                answer: 0,
+                time: 30
+            },
+            {
+                question: "Find the median of: 4, 7, 8, 5, 2.",
+                options: ["5", "6", "7", "8"],
+                answer: 0,
+                time: 30
+            },
+            {
+                question: "If y varies directly as x and y=10 when x=4, find y when x=9.",
+                options: ["22.5", "20", "25", "30"],
+                answer: 0,
+                time: 30
+            },
+            {
+                question: "The area of a trapezium is 84 cm², height 7 cm and one base 10 cm. Find the other base.",
+                options: ["14", "12", "18", "20"],
+                answer: 0,
+                time: 30
+            },
+            {
+                question: "The gradient of the line 3y - 2x = 6 is:",
+                options: ["2/3", "3/2", "-2/3", "-3/2"],
+                answer: 0,
+                time: 30
+            },
+            {
+                question: "Evaluate √81 - 4².",
+                options: ["1", "-1", "2", "-2"],
+                answer: 0,
+                time: 30
+            },
+            {
+                question: "If the length of a rectangle is 12 cm and the diagonal is 13 cm, find the width.",
+                options: ["5", "7", "9", "11"],
+                answer: 0,
+                time: 30
+            },
+            {
+                question: "The 6th term of a G.P is 486, first term 6, common ratio r>0. Find r.",
+                options: ["2", "3", "4", "5"],
+                answer: 1,
+                time: 30
+            },
+            {
+                question: "Solve for x: (x-2)/3 = 4.",
+                options: ["14", "10", "11", "12"],
+                answer: 0,
+                time: 30
+            },
+            {
+                question: "Find the mode of: 12, 14, 15, 15, 16, 14, 15.",
+                options: ["15", "14", "16", "None"],
+                answer: 0,
+                time: 30
+            },
+            {
+                question: "The height of a cone is 12 cm, base radius 5 cm. Find the volume. (π=3.142)",
+                options: ["314.2", "628.4", "942.6", "1047.3"],
+                answer: 0,
+                time: 30
+            },
+            {
+                question: "A trader bought a radio for ₦15,000 and sold it for ₦18,000. Find his gain percent.",
+                options: ["20%", "15%", "18%", "25%"],
+                answer: 0,
+                time: 30
+            },
+            {
+                question: "Differentiate y = 4x² + 3x with respect to x.",
+                options: ["4x+3", "8x+3", "8x+6", "4x²+3"],
+                answer: 1,
+                time: 30
+            },
+            {
+                question: "Find the gradient of a line parallel to 2y = 5x - 3.",
+                options: ["2/5", "5/2", "-5/2", "-2/5"],
+                answer: 1,
+                time: 30
+            },
+            {
+                question: "A die is tossed once. Probability of getting a number greater than 4?",
+                options: ["1/3", "1/2", "2/3", "5/6"],
+                answer: 1,
+                time: 30
+            },
+            {
+                question: "If cosθ = 0.6, find θ correct to nearest degree.",
+                options: ["37°", "53°", "60°", "30°"],
+                answer: 1,
+                time: 30
+            },
+            {
+                question: "Expand (x-3)².",
+                options: ["x²-6x+9", "x²+6x+9", "x²-9", "x²+9"],
+                answer: 0,
+                time: 30
+            },
+            {
+                question: "A bag contains 4 white, 5 red, and 3 blue balls. Probability of picking a red ball?",
+                options: ["5/12", "1/3", "5/9", "1/4"],
+                answer: 0,
+                time: 30
+            },
+            {
+                question: "Find the simple interest on ₦8,000 for 3 years at 5% p.a.",
+                options: ["₦1,000", "₦1,200", "₦1,500", "₦2,000"],
+                answer: 1,
+                time: 30
+            },
+            {
+                question: "The mean of 10 numbers is 15. If one number is removed, the mean is 14. Find the number removed.",
+                options: ["24", "25", "26", "27"],
+                answer: 2,
+                time: 30
+            },
+            {
+                question: "Solve: 2x² - 5x - 3 = 0",
+                options: ["x=3,-1/2", "x=-3,1/2", "x=3,1/2", "x=-3,-1/2"],
+                answer: 0,
+                time: 30
+            },
+            {
+                question: "The exterior angle of a regular polygon is 45°. How many sides has it?",
+                options: ["8", "6", "9", "10"],
+                answer: 0,
+                time: 30
+            },
+            {
+                question: "Find the distance between points (2,3) and (6,9).",
+                options: ["6", "√52", "10", "√45"],
+                answer: 1,
+                time: 30
+            },
+            {
+                question: "If f(x) = 2x - 5, find f⁻¹(x).",
+                options: ["(x+5)/2", "(x-5)/2", "2x+5", "2x-5"],
+                answer: 0,
+                time: 30
+            },
+            {
+                question: "A triangle has sides 7 cm, 8 cm, and 9 cm. Find its area (use Heron's formula).",
+                options: ["26.83 cm²", "28.0 cm²", "30.0 cm²", "36.0 cm²"],
+                answer: 0,
+                time: 30
+            },
+            {
+                question: "The 10th term of an A.P is 35, first term 5. Find the common difference.",
+                options: ["3", "4", "5", "6"],
+                answer: 0,
+                time: 30
+            },
+            {
+                question: "If y varies inversely as x, and y=4 when x=5, find y when x=8.",
+                options: ["2.5", "2.0", "3.0", "4.0"],
+                answer: 0,
+                time: 30
+            },
+            {
+                question: "A solid cube of side 5 cm is melted and recast into spheres of radius 1 cm. How many spheres? (π=3.142)",
+                options: ["30", "32", "34", "36"],
+                answer: 1,
+                time: 30
+            },
+            {
+                question: "If sinθ = 0.8, find θ to nearest degree.",
+                options: ["36°", "53°", "64°", "78°"],
+                answer: 1,
+                time: 30
+            },
+            {
+                question: "Find the 7th term of the G.P: 3, 6, 12, ...",
+                options: ["192", "196", "198", "200"],
+                answer: 0,
+                time: 30
+            },
+            {
+                question: "A man invested ₦5,000 at 10% p.a. compound interest. Find value after 3 years.",
+                options: ["₦6,655", "₦6,050", "₦6,550", "₦6,750"],
+                answer: 0,
+                time: 30
+            },
+            {
+                question: "Evaluate 3/4 ÷ 5/8.",
+                options: ["24/20", "6/5", "15/32", "5/6"],
+                answer: 1,
+                time: 30
+            },
+            {
+                question: "If cosA = 5/13 in a right triangle, find sinA.",
+                options: ["12/13", "5/12", "13/12", "12/5"],
+                answer: 0,
+                time: 30
+            },
+            {
+                question: "Simplify: (x³)⁴.",
+                options: ["x⁷", "x¹²", "x⁹", "x⁶"],
+                answer: 1,
+                time: 30
+            },
+            {
+                question: "The sum of first n terms of an A.P is Sₙ = n/2(6+4n). Find first term.",
+                options: ["2", "3", "4", "6"],
+                answer: 3,
+                time: 30
+            },
+            {
+                question: "A fair coin is tossed 3 times. Probability of exactly 2 heads?",
+                options: ["3/8", "1/2", "1/4", "5/8"],
+                answer: 0,
+                time: 30
+            },
+            {
+                question: "Find median of first 10 natural numbers.",
+                options: ["5", "5.5", "6", "6.5"],
+                answer: 2,
+                time: 30
+            },
+            {
+                question: "Differentiate y = 3x³ - 2x + 7.",
+                options: ["9x²-2", "9x²+2", "6x²-2", "6x²+2"],
+                answer: 0,
+                time: 30
+            },
+            {
+                question: "Find 4th term of A.P with a=7, d=3.",
+                options: ["16", "15", "17", "18"],
+                answer: 0,
+                time: 30
+            },
+            {
+                question: "A shop sold goods worth ₦48,000 at 4% discount. How much was collected?",
+                options: ["₦46,080", "₦46,200", "₦46,500", "₦47,500"],
+                answer: 0,
+                time: 30
+            }
+        ];
+
+        // Quiz variables
+        let currentQuestion = 0;
+        let userAnswers = Array(questions.length).fill(null);
+        let score = 0;
+        let timeLeft = 35 * 60; // 35 minutes in seconds
+        let timerInterval;
+        let quizStarted = false;
+
+        // DOM elements
+        const startScreen = document.getElementById('start-screen');
+        const quizContainer = document.getElementById('quiz-container');
+        const questionContainer = document.getElementById('question-container');
+        const prevBtn = document.getElementById('prev-btn');
+        const nextBtn = document.getElementById('next-btn');
+        const submitBtn = document.getElementById('submit-btn');
+        const timerElement = document.getElementById('timer');
+        const timerProgress = document.getElementById('timer-progress');
+        const userInfoContainer = document.getElementById('user-info-container');
+        const resultContainer = document.getElementById('result-container');
+        const scoreElement = document.getElementById('score');
+        const percentageElement = document.getElementById('percentage');
+        const correctCountElement = document.getElementById('correct-count');
+        const incorrectCountElement = document.getElementById('incorrect-count');
+        const correctionsElement = document.getElementById('corrections');
+        const userInfoForm = document.getElementById('user-info-form');
+        const startBtn = document.getElementById('start-btn');
+        const restartBtn = document.getElementById('restart-btn');
+        const loadingScreen = document.getElementById('loading');
+        const successMessage = document.getElementById('success-message');
+        const formScore = document.getElementById('form-score');
+        const formPercentage = document.getElementById('form-percentage');
+        const formCorrect = document.getElementById('form-correct');
+        const formIncorrect = document.getElementById('form-incorrect');
+        const formAnswers = document.getElementById('form-answers');
+        const formReplyTo = document.getElementById('form-replyto');
+
+        // Start quiz
+        startBtn.addEventListener('click', startQuiz);
+        restartBtn.addEventListener('click', restartQuiz);
+
+        function startQuiz() {
+            startScreen.style.display = 'none';
+            quizContainer.style.display = 'block';
+            quizStarted = true;
+            startTimer();
+            showQuestion(currentQuestion);
+        }
+
+        function restartQuiz() {
+            currentQuestion = 0;
+            userAnswers = Array(questions.length).fill(null);
+            score = 0;
+            timeLeft = 35 * 60;
+            
+            resultContainer.classList.remove('active');
+            userInfoContainer.classList.remove('active');
+            startScreen.style.display = 'block';
+            
+            // Reset timer display
+            updateTimerDisplay();
+        }
+
+        // Timer functions
+        function startTimer() {
+            clearInterval(timerInterval);
+            timerInterval = setInterval(updateTimer, 1000);
+        }
+
+        function updateTimer() {
+            if (timeLeft <= 0) {
+                clearInterval(timerInterval);
+                timeLeft = 0;
+                submitQuiz();
+                return;
+            }
+            
+            timeLeft--;
+            updateTimerDisplay();
+            
+            // Change timer color when time is running low
+            if (timeLeft <= 10 * 60 && timeLeft > 5 * 60) {
+                timerElement.classList.add('warning');
+                timerElement.classList.remove('critical');
+            } else if (timeLeft <= 5 * 60) {
+                timerElement.classList.remove('warning');
+                timerElement.classList.add('critical');
+            }
+        }
+
+        function updateTimerDisplay() {
+            const minutes = Math.floor(timeLeft / 60);
+            const seconds = timeLeft % 60;
+            const formattedTime = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+            
+            // Update timer text
+            timerElement.querySelector('.timer-text').textContent = `Time remaining: ${formattedTime}`;
+            
+            // Update progress bar
+            const totalTime = 35 * 60;
+            const progressPercentage = (timeLeft / totalTime) * 100;
+            timerProgress.style.width = `${progressPercentage}%`;
+        }
+
+        // Question navigation
+        function showQuestion(index) {
+            if (index < 0 || index >= questions.length) return;
+            
+            currentQuestion = index;
+            
+            // Update navigation buttons
+            prevBtn.disabled = index === 0;
+            nextBtn.disabled = false;
+            submitBtn.style.display = index === questions.length - 1 ? 'block' : 'none';
+            
+            // Display question
+            const question = questions[index];
+            questionContainer.innerHTML = `
+                <div class="question-number">
+                    <span>Question ${index + 1} of ${questions.length}</span>
+                    <div class="progress-bar">
+                        <div class="progress-fill" style="width: ${((index + 1) / questions.length) * 100}%"></div>
+                    </div>
+                </div>
+                <div class="question-text">${question.question}</div>
+                <div class="options">
+                    ${question.options.map((option, i) => `
+                        <div class="option ${userAnswers[index] === i ? 'selected' : ''}" data-index="${i}">
+                            <div class="option-label">
+                                <span class="option-letter">${String.fromCharCode(65 + i)}</span>
+                                <span>${option}</span>
+                            </div>
+                        </div>
+                    `).join('')}
+                </div>
+            `;
+            
+            // Add event listeners to options
+            document.querySelectorAll('.option').forEach(option => {
+                option.addEventListener('click', () => {
+                    // Remove selected class from all options
+                    document.querySelectorAll('.option').forEach(opt => {
+                        opt.classList.remove('selected');
+                    });
+                    
+                    // Add selected class to clicked option
+                    option.classList.add('selected');
+                    
+                    // Save user's answer
+                    userAnswers[index] = parseInt(option.dataset.index);
+                });
+            });
+        }
+
+        prevBtn.addEventListener('click', () => {
+            if (currentQuestion > 0) {
+                showQuestion(currentQuestion - 1);
+            }
+        });
+
+        nextBtn.addEventListener('click', () => {
+            if (currentQuestion < questions.length - 1) {
+                showQuestion(currentQuestion + 1);
+            }
+        });
+
+        submitBtn.addEventListener('click', submitQuiz);
+
+        function submitQuiz() {
+            clearInterval(timerInterval);
+            quizContainer.style.display = 'none';
+            userInfoContainer.classList.add('active');
+            
+            // Calculate score
+            score = 0;
+            for (let i = 0; i < questions.length; i++) {
+                if (userAnswers[i] === questions[i].answer) {
+                    score++;
+                }
+            }
+        }
+
+        // User info form submission
+        userInfoForm.addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const name = document.getElementById('name').value;
+            const email = document.getElementById('email').value;
+            const comments = document.getElementById('comments').value;
+            
+            // Prepare the answers summary
+            let answersSummary = '';
+            questions.forEach((question, index) => {
+                const userAnswer = userAnswers[index];
+                const isCorrect = userAnswer === question.answer;
+                answersSummary += `
+                    Question ${index + 1}: ${question.question}
+                    Your answer: ${userAnswer !== null ? question.options[userAnswer] : 'Not answered'} (${isCorrect ? 'Correct' : 'Incorrect'})
+                    ${!isCorrect ? `Correct answer: ${question.options[question.answer]}\n` : '\n'}
+                `;
+            });
+            
+            // Set form values
+            const percentage = Math.round((score / questions.length) * 100);
+            formScore.value = `${score}/${questions.length}`;
+            formPercentage.value = `${percentage}%`;
+            formCorrect.value = score;
+            formIncorrect.value = questions.length - score;
+            formAnswers.value = answersSummary;
+            formReplyTo.value = email;
+            
+            // Show loading screen
+            loadingScreen.classList.add('active');
+            
+            try {
+                // Submit the form using Formspree
+                const formData = new FormData(userInfoForm);
+                const response = await fetch('https://formspree.io/f/xldlzjzr', {
+                    method: 'POST',
+                    body: formData,
+                    headers: {
+                        'Accept': 'application/json'
+                    }
+                });
+                
+                if (response.ok) {
+                    // Show success message
+                    successMessage.classList.add('active');
+                    
+                    // Show results after a brief delay
+                    setTimeout(() => {
+                        loadingScreen.classList.remove('active');
+                        showResults();
+                    }, 1500);
+                } else {
+                    throw new Error('Form submission failed');
+                }
+            } catch (error) {
+                console.error('Error submitting form:', error);
+                alert('There was an error submitting your results. Please try again.');
+                loadingScreen.classList.remove('active');
+            }
+        });
+
+        function showResults() {
+            userInfoContainer.classList.remove('active');
+            resultContainer.classList.add('active');
+            
+            // Display score
+            const percentage = Math.round((score / questions.length) * 100);
+            scoreElement.textContent = `${score}/${questions.length}`;
+            percentageElement.textContent = `${percentage}%`;
+            correctCountElement.textContent = score;
+            incorrectCountElement.textContent = questions.length - score;
+            
+            // Display corrections
+            correctionsElement.innerHTML = '';
+            questions.forEach((question, index) => {
+                const userAnswer = userAnswers[index];
+                const isCorrect = userAnswer === question.answer;
+                const correctionItem = document.createElement('div');
+                correctionItem.className = `correction-item ${isCorrect ? 'correct' : 'incorrect'}`;
+                
+                correctionItem.innerHTML = `
+                    <div class="correction-question">${index + 1}. ${question.question}</div>
+                    <p>Your answer: ${userAnswer !== null ? question.options[userAnswer] : 'Not answered'} 
+                    <span class="${isCorrect ? 'correct-answers' : 'incorrect-answers'}">(${isCorrect ? 'Correct' : 'Incorrect'})</span></p>
+                    ${!isCorrect ? `<p>Correct answer: ${question.options[question.answer]}</p>` : ''}
+                `;
+                
+                correctionsElement.appendChild(correctionItem);
+            });
+        }
+
+        // Floating particles effect
+        function createParticles() {
+            const particlesContainer = document.getElementById('particles');
+            const particleCount = 20;
+            
+            for (let i = 0; i < particleCount; i++) {
+                const particle = document.createElement('div');
+                particle.className = 'particle';
+                
+                // Random size between 2px and 6px
+                const size = Math.random() * 4 + 2;
+                particle.style.width = `${size}px`;
+                particle.style.height = `${size}px`;
+                
+                // Random position
+                particle.style.left = `${Math.random() * 100}%`;
+                particle.style.top = `${Math.random() * 100}%`;
+                
+                // Random animation
+                const duration = Math.random() * 20 + 10;
+                particle.style.animation = `float ${duration}s linear infinite`;
+                
+                // Add to container
+                particlesContainer.appendChild(particle);
+            }
+        }
+
+        // Initialize
+        createParticles();
+    </script>
+</body>
+</html>
